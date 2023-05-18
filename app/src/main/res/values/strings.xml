@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">FoodFinder</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="hello_home_fragment">Hello Home Fragment</string>
+    <string name="hello_favorites_fragment">Hello Favorits Fragment</string>
+    <string name="hello_category_fragment">hello category fragment</string>
+    <string name="home">Home</string>
+    <string name="favorites">Favorites</string>
+    <string name="categories">Categories</string>
+    <string name="what_would_you_like_yo_eat">What would you like yo eat ?</string>
+    <string name="over_popular_items">Over popular items</string>
+    <string name="area">Area</string>
+    <string name="instructions">Instructions:</string>
+    <string name="instructions_steps">Instructions_steps</string>
+    <string name="readMore">ReadMore…</string>
+    <string name="search_meals">Search Meals...</string>
+</resources>
