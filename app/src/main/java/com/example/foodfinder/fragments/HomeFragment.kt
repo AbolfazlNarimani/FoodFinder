@@ -7,6 +7,7 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
@@ -24,10 +25,10 @@ import com.example.foodfinder.databinding.FragmentHomeBinding
 import com.example.foodfinder.fragments.bottomsheet.MealBottomSheetFragment
 import com.example.foodfinder.pojo.MealsByCategory
 import com.example.foodfinder.pojo.Meal
-import com.example.foodfinder.util.GlobalState
-import com.example.foodfinder.util.GlobalState.STATE_SUCCESSFUL
+import com.example.foodfinder.util.Resource
 import com.example.foodfinder.viewModels.HomeViewModel
 import com.example.foodfinder.viewModels.MealViewModel
+import java.lang.Error
 
 
 class HomeFragment : Fragment() {
@@ -41,6 +42,7 @@ class HomeFragment : Fragment() {
     private lateinit var popularItemsAdapter: MostPopularAdapter
     private lateinit var categoriesAdapter: CategoriesAdapter
     private val mealViewModel by viewModels<MealViewModel>()
+    private var isLoadingFinished = 3
 
     // companion object for extra intent keys
     companion object {
@@ -103,42 +105,85 @@ class HomeFragment : Fragment() {
 
 
     private fun checkLoadingState() {
-        hideContent()
-         Handler(Looper.myLooper()!!).postDelayed({
-             showContent()
-         }, 2000)
+
+        if (isLoadingFinished == 0){
+            showContent()
+        }
     }
 
-    private fun hideContent() {
-        binding.homeScrollView.visibility = View.INVISIBLE
-        binding.homeProgress.visibility = View.VISIBLE
-    }
+
 
     private fun showContent() {
-        binding.homeProgress.visibility = View.INVISIBLE
+        binding.homeProgress.visibility = View.GONE
         binding.homeScrollView.visibility = View.VISIBLE
     }
 
 
     // observer functions
     private fun observeRandomMeal() {
+
         viewModel.observeRandomMealLivedata().observe(
             viewLifecycleOwner
         ) { value ->
-            Glide.with(this@HomeFragment).load(value.strMealThumb).into(binding.imgRandomMeal)
-            this.randomMeal = value
+
+            when (value){
+
+                is Resource.Success -> {
+                    Glide.with(this@HomeFragment).load(value.data?.strMealThumb).into(binding.imgRandomMeal)
+                    value.data?.let {  this.randomMeal = value.data }
+                   -- isLoadingFinished
+                    checkLoadingState()
+                }
+
+                is Resource.Error -> {
+                    Toast.makeText(context, "No response received please check your internet connection", Toast.LENGTH_LONG).show()
+                }
+
+                else -> Unit
+            }
+
         }
     }
 
     private fun observerPopularItemsLiveData() {
+
         viewModel.observePopularItemsLivedata().observe(viewLifecycleOwner, Observer { mealList ->
-            popularItemsAdapter.setMeals(mealsList = mealList as ArrayList<MealsByCategory>)
+            when (mealList){
+                is Resource.Success -> {
+                    popularItemsAdapter.differ.submitList(mealList.data)
+                   -- isLoadingFinished
+                    checkLoadingState()
+                }
+
+                is Resource.Error -> {
+                    Toast.makeText(context, "No response received please check your internet connection", Toast.LENGTH_LONG).show()
+                }
+                else -> Unit
+            }
+
+
         })
     }
 
     private fun observeCategoriesLiveData() {
+
         viewModel.observeCategoriesLiveData().observe(viewLifecycleOwner, Observer { categories ->
-            categoriesAdapter.setCategoryList(categories)
+
+            when (categories){
+                is Resource.Success -> {
+                    categoriesAdapter.differ.submitList(categories.data)
+                    -- isLoadingFinished
+                    checkLoadingState()
+                }
+
+                is Resource.Error -> {
+                    Toast.makeText(context, "No response received please check your internet connection", Toast.LENGTH_LONG).show()
+                }
+
+                else -> Unit
+            }
+
+
         })
     }
 

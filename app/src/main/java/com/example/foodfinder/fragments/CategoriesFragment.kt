@@ -8,12 +8,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
-import com.example.foodfinder.R
 import com.example.foodfinder.activities.CategoryMealsActivity
 import com.example.foodfinder.activities.MainActivity
 import com.example.foodfinder.adapters.CategoriesAdapter
 import com.example.foodfinder.databinding.FragmentCategoriesBinding
-import com.example.foodfinder.databinding.MealItemBinding
 import com.example.foodfinder.viewModels.HomeViewModel
 
 class CategoriesFragment : Fragment() {
@@ -66,7 +64,7 @@ class CategoriesFragment : Fragment() {
     // observe function
     private fun observeCategories() {
         viewModel.observeCategoriesLiveData().observe(viewLifecycleOwner, Observer { categories ->
-            categoriesAdapter.setCategoryList(categories)
+            categoriesAdapter.differ.submitList(categories.data)
         })
     }
 }

@@ -2,26 +2,32 @@ package com.example.foodfinder.adapters
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.AsyncListDiffer
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.bumptech.glide.Glide
 import com.example.foodfinder.databinding.CategoryItemBinding
 import com.example.foodfinder.pojo.Category
-import com.example.foodfinder.pojo.CategoryList
-import com.example.foodfinder.pojo.MealsByCategory
+import com.example.foodfinder.util.Resource
 
-class CategoriesAdapter(): RecyclerView.Adapter<CategoriesAdapter.CategoryViewHolder>() {
+ class CategoriesAdapter(): RecyclerView.Adapter<CategoriesAdapter.CategoryViewHolder>() {
 
     class CategoryViewHolder(val binding: CategoryItemBinding): RecyclerView.ViewHolder(binding.root)
 
      var onItemClick:((Category) -> Unit)? = null
 
-    var categoriesList = ArrayList<Category>()
+    var diffCallback = object : DiffUtil.ItemCallback<Category>(){
+        override fun areItemsTheSame(oldItem: Category, newItem: Category): Boolean {
+            return oldItem.idCategory == newItem.idCategory
+        }
 
-    fun setCategoryList(categoryList: List<Category>){
-        this.categoriesList = categoryList as ArrayList<Category>
-        notifyDataSetChanged()
+        override fun areContentsTheSame(oldItem: Category, newItem: Category): Boolean {
+           return oldItem == newItem
+        }
     }
+
+     val differ = AsyncListDiffer(this, diffCallback)
+
 
 
 
@@ -43,14 +49,14 @@ class CategoriesAdapter(): RecyclerView.Adapter<CategoriesAdapter.CategoryViewHo
     }
 
     override fun onBindViewHolder(holder: CategoriesAdapter.CategoryViewHolder, position: Int) {
-        Glide.with(holder.itemView).load(categoriesList[position].strCategoryThumb).into(holder.binding.imgCategory)
-        holder.binding.tvCategoryName.text = categoriesList[position].strCategory
+        Glide.with(holder.itemView).load(differ.currentList[position].strCategoryThumb).into(holder.binding.imgCategory)
+        holder.binding.tvCategoryName.text = differ.currentList[position].strCategory
         holder.itemView.setOnClickListener {
-            onItemClick!!.invoke(categoriesList[position])
+            onItemClick!!.invoke(differ.currentList[position])
         }
     }
 
     override fun getItemCount(): Int {
-        return  categoriesList.size
+        return  differ.currentList.size
     }
 }

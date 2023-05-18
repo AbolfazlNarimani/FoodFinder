@@ -15,6 +15,7 @@ import com.example.foodfinder.pojo.Meal
 import com.example.foodfinder.pojo.MealList
 import com.example.foodfinder.retrofit.RetrofitInstance
 import com.example.foodfinder.util.GlobalState
+import com.example.foodfinder.util.Resource
 import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
@@ -26,9 +27,10 @@ class HomeViewModel(
     private val mealDataBase: MealDataBase
 ) : ViewModel() {
 
-    private var randomMealLiveData = MutableLiveData<Meal>()
-    private var popularItemsLiveData = MutableLiveData<List<MealsByCategory>>()
-    private var categoriesLiveData = MutableLiveData<List<Category>>()
+    private var randomMealLiveData = MutableLiveData<Resource<Meal>>(Resource.Unspecified())
+    private var popularItemsLiveData = MutableLiveData<Resource<List<MealsByCategory>>>(Resource.Unspecified())
+    private var categoriesLiveData = MutableLiveData<Resource<List<Category>>>(Resource.Unspecified())
+
     private var favoritesMealLiveData = mealDataBase.MealDao().getAllMeals()
     private var bottomSheetMealLiveData = MutableLiveData<Meal>()
     private var searchedMealsLiveData = MutableLiveData<List<Meal>>()
@@ -39,8 +41,11 @@ class HomeViewModel(
     // functions for getting DATA
     fun getRandomMeal() {
 
+        randomMealLiveData.postValue(Resource.Loading())
+
         saveStateRandomMeal?.let {
-            randomMealLiveData.postValue(it)
+
+            randomMealLiveData.postValue(Resource.Success(it))
             return
         }
 
@@ -50,18 +55,23 @@ class HomeViewModel(
                 response.body()?.let {
                     val randomMeal: Meal = response.body()!!.meals[0]
 
-                    randomMealLiveData.postValue(randomMeal)
+                    randomMealLiveData.postValue(Resource.Success(randomMeal))
                     saveStateRandomMeal = randomMeal
                 }
             }
 
             override fun onFailure(call: Call<MealList>, t: Throwable) {
+
                 Log.d("TEST", t.message.toString())
+                randomMealLiveData.postValue(Resource.Error(t.message.toString()))
             }
         })
     }
 
     fun getPopularItems() {
+
+        popularItemsLiveData.postValue(Resource.Loading())
+
         RetrofitInstance.api.getPopularItems(randomCategory())
             .enqueue(object : Callback<MealsByCategoryList> {
                 override fun onResponse(
@@ -69,12 +79,15 @@ class HomeViewModel(
                     response: Response<MealsByCategoryList>
                 ) {
                     response.body()?.let {
-                        popularItemsLiveData.postValue(response.body()!!.meals)
+
+                        popularItemsLiveData.postValue(Resource.Success(response.body()!!.meals))
+
                     }
                 }
 
                 override fun onFailure(call: Call<MealsByCategoryList>, t: Throwable) {
-                    return
+                    Log.d("HomeViewModel", t.message.toString())
+                    popularItemsLiveData.postValue(Resource.Error(t.message.toString()))
                 }
             })
     }
@@ -101,16 +114,22 @@ class HomeViewModel(
     }
 
     fun getCategories() {
+
+        categoriesLiveData.postValue(Resource.Loading())
+
         RetrofitInstance.api.getCategories().enqueue(object : Callback<CategoryList> {
             override fun onResponse(call: Call<CategoryList>, response: Response<CategoryList>) {
+
                 response.body()?.let { categoryList ->
-                    categoriesLiveData.postValue(categoryList.categories)
-                    GlobalState.setStateSuccessful()
+
+                    categoriesLiveData.postValue(Resource.Success(categoryList.categories))
+
                 }
             }
 
             override fun onFailure(call: Call<CategoryList>, t: Throwable) {
-                return
+                Log.d("HomeViewModel", t.message.toString())
+                categoriesLiveData.postValue(Resource.Error(t.message.toString()))
             }
         })
     }
@@ -147,9 +166,9 @@ class HomeViewModel(
 
 
     // observer-functions
-    fun observeRandomMealLivedata(): LiveData<Meal> = randomMealLiveData
-    fun observePopularItemsLivedata(): LiveData<List<MealsByCategory>> = popularItemsLiveData
-    fun observeCategoriesLiveData(): MutableLiveData<List<Category>> = categoriesLiveData
+    fun observeRandomMealLivedata(): LiveData<Resource<Meal>> = randomMealLiveData
+    fun observePopularItemsLivedata(): LiveData<Resource<List<MealsByCategory>>> = popularItemsLiveData
+    fun observeCategoriesLiveData(): MutableLiveData<Resource<List<Category>>> = categoriesLiveData
     fun observeFavoritesMealsLiveData(): LiveData<List<Meal>> = favoritesMealLiveData
     fun observeBottomSheetMeal(): LiveData<Meal> = bottomSheetMealLiveData
     fun observeSearchedMeals(): LiveData<List<Meal>> = searchedMealsLiveData

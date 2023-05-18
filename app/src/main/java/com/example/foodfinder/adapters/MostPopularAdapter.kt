@@ -2,6 +2,8 @@ package com.example.foodfinder.adapters
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.AsyncListDiffer
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.foodfinder.databinding.PopularItemsBinding
@@ -14,24 +16,33 @@ class MostPopularAdapter: RecyclerView.Adapter<MostPopularAdapter.PopularMealVie
     lateinit var onItemClick:((MealsByCategory) -> Unit)
      var onLongItemClick: ((MealsByCategory) -> Unit)?= null
 
-    private var mealsList = ArrayList<MealsByCategory>()
+    private var diffCallback = object : DiffUtil.ItemCallback<MealsByCategory>(){
+        override fun areItemsTheSame(oldItem: MealsByCategory, newItem: MealsByCategory): Boolean {
+            return oldItem.idMeal == newItem.idMeal
+        }
 
-    fun setMeals(mealsList: ArrayList<MealsByCategory>){
-        this.mealsList = mealsList
-        notifyDataSetChanged()
+        override fun areContentsTheSame(
+            oldItem: MealsByCategory,
+            newItem: MealsByCategory
+        ): Boolean {
+            return oldItem == newItem
+        }
     }
+
+    val differ = AsyncListDiffer(this, diffCallback)
+
 
     override fun onBindViewHolder(holder: PopularMealViewHolder, position: Int) {
         val imgView =
 
-            Glide.with(holder.itemView).load(mealsList[position].strMealThumb).into(holder.binding.imgPopularMealItem)
+            Glide.with(holder.itemView).load(differ.currentList[position].strMealThumb).into(holder.binding.imgPopularMealItem)
 
         holder.itemView.setOnClickListener {
-           onItemClick.invoke(mealsList[position])
+           onItemClick.invoke(differ.currentList[position])
         }
 
         holder.itemView.setOnLongClickListener {
-            onLongItemClick?.invoke(mealsList[position])
+            onLongItemClick?.invoke(differ.currentList[position])
             true
         }
     }
@@ -47,7 +58,7 @@ class MostPopularAdapter: RecyclerView.Adapter<MostPopularAdapter.PopularMealVie
 
 
     override fun getItemCount(): Int {
-        return mealsList.size
+        return differ.currentList.size
     }
 
 
