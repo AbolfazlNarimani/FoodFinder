@@ -2,8 +2,6 @@ package com.example.foodfinder.fragments
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,12 +21,10 @@ import com.example.foodfinder.adapters.CategoriesAdapter
 import com.example.foodfinder.adapters.MostPopularAdapter
 import com.example.foodfinder.databinding.FragmentHomeBinding
 import com.example.foodfinder.fragments.bottomsheet.MealBottomSheetFragment
-import com.example.foodfinder.pojo.MealsByCategory
 import com.example.foodfinder.pojo.Meal
 import com.example.foodfinder.util.Resource
 import com.example.foodfinder.viewModels.HomeViewModel
 import com.example.foodfinder.viewModels.MealViewModel
-import java.lang.Error
 
 
 class HomeFragment : Fragment() {
@@ -99,8 +95,8 @@ class HomeFragment : Fragment() {
 
         onPopularItemLongClick()
         onSearchIconClick()
-    }
 
+    }
 
 
 
@@ -125,7 +121,6 @@ class HomeFragment : Fragment() {
         viewModel.observeRandomMealLivedata().observe(
             viewLifecycleOwner
         ) { value ->
-
             when (value){
 
                 is Resource.Success -> {
@@ -136,12 +131,10 @@ class HomeFragment : Fragment() {
                 }
 
                 is Resource.Error -> {
-                    Toast.makeText(context, "No response received please check your internet connection", Toast.LENGTH_LONG).show()
-                }
 
+                }
                 else -> Unit
             }
-
         }
     }
 

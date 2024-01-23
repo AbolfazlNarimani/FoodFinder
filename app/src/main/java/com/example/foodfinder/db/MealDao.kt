@@ -7,6 +7,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.foodfinder.pojo.Meal
+import kotlinx.coroutines.flow.Flow
 
 
 @Dao
@@ -21,6 +22,5 @@ interface MealDao {
 
     @Query("SELECT * FROM mealInformation")
     fun getAllMeals(): LiveData<List<Meal>>
-
 
 }

@@ -30,6 +30,7 @@ class HomeViewModel(
     private var randomMealLiveData = MutableLiveData<Resource<Meal>>(Resource.Unspecified())
     private var popularItemsLiveData = MutableLiveData<Resource<List<MealsByCategory>>>(Resource.Unspecified())
     private var categoriesLiveData = MutableLiveData<Resource<List<Category>>>(Resource.Unspecified())
+    private var cacheMeal = MutableLiveData<Resource<List<Meal>>>(Resource.Unspecified())
 
     private var favoritesMealLiveData = mealDataBase.MealDao().getAllMeals()
     private var bottomSheetMealLiveData = MutableLiveData<Meal>()
@@ -172,6 +173,9 @@ class HomeViewModel(
     fun observeFavoritesMealsLiveData(): LiveData<List<Meal>> = favoritesMealLiveData
     fun observeBottomSheetMeal(): LiveData<Meal> = bottomSheetMealLiveData
     fun observeSearchedMeals(): LiveData<List<Meal>> = searchedMealsLiveData
+
+
+
 
     // Room function
     fun deleteMeal(meal: Meal) {
